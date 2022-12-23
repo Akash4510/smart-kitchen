@@ -1,4 +1,4 @@
-int flamePin = D3;
+const int flamePin = D3;
 int flame = HIGH;
 
 void setup() {
