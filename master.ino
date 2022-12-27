@@ -64,8 +64,8 @@ const float humidityThreshold = 50.00;
 DHT dht(DHT_PIN, DHT11);
 
 //---------- DEFINE WIFI CREDENTIALS ----------//
-const char *wifiSSID = "POCO M2 Pro";      // Your network SSID here
-const char *wifiPassword = "unlockby8800"; // Your network's password here
+const char *wifiSSID = "";     // Your network SSID here
+const char *wifiPassword = ""; // Your network's password here
 
 //----------- CREATING WIFI CLIENT ------------//
 WiFiClient client;
