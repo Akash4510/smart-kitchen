@@ -13,7 +13,6 @@
 //------------- INCLUDE LIBRARIES -------------//
 #include <ESP8266WiFi.h>
 #include <BlynkSimpleEsp8266.h>
-#include <ThingSpeak.h>
 #include "DHT.h"
 
 //------------- DEFINE SENSOR PINS ------------//
@@ -27,13 +26,6 @@
 #define LED2 D6
 #define LED3 D7
 #define LED4 D8
-
-//---------- DEFINE THINGSPEAK FIELDS ---------//
-#define THINGSPEAK_GAS_FIELD 1
-#define THINGSPEAK_TEMPERATURE_FIELD 2
-#define THINGSPEAK_HUMIDITY_FIELD 3
-#define THINGSPEAK_IR_FIELD 4
-#define THINGSPEAK_FLAME_FIELD 5
 
 //------------- DEFINE BLYNK PINS -------------//
 #define BLYNK_GAS_PIN V0
@@ -69,10 +61,6 @@ const char *wifiPassword = ""; // Your network's password here
 
 //----------- CREATING WIFI CLIENT ------------//
 WiFiClient client;
-
-//------ DEFINE THINGSPEAK CREDENTIALS --------//
-unsigned long tsChannelNumber = 1990582;        // ThingSpeak Channel ID here
-const char *tsWriteAPIKey = "91LKBDA57MTZYY4Q"; // ThingSpeak write API key here
 
 //------- SETUP BLYNK CONTROL SWITCHES --------//
 int bSwitch1Status = 0;
@@ -116,7 +104,6 @@ void setup()
 
   dht.begin();
   WiFi.begin(wifiSSID, wifiPassword);
-  ThingSpeak.begin(client);
   Blynk.begin(BLYNK_AUTH_TOKEN, wifiSSID, wifiPassword);
 
   pinMode(GAS_PIN, INPUT);
@@ -180,15 +167,6 @@ void loop()
   digitalWrite(LED2, bSwitch2Status);
   digitalWrite(LED3, bSwitch3Status);
   digitalWrite(LED4, bSwitch4Status);
-
-  // Send the sensor values to ThingSpeak
-  ThingSpeak.setField(THINGSPEAK_GAS_FIELD, gasValue);
-  ThingSpeak.setField(THINGSPEAK_TEMPERATURE_FIELD, temperatureValue);
-  ThingSpeak.setField(THINGSPEAK_HUMIDITY_FIELD, humidityValue);
-  ThingSpeak.setField(THINGSPEAK_IR_FIELD, IRValue);
-  ThingSpeak.setField(THINGSPEAK_FLAME_FIELD, flameValue);
-
-  ThingSpeak.writeFields(tsChannelNumber, tsWriteAPIKey);
 
   // Send the sensor values to Blynk
   Blynk.virtualWrite(BLYNK_GAS_PIN, gasValue);
