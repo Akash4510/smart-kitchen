@@ -22,11 +22,14 @@
 #define FLAME_PIN D1
 #define IR_PIN D0
 
-//-------------- DEFINE LED PINS --------------//
-#define LED1 D5
-#define LED2 D6
-#define LED3 D7
-#define LED4 D8
+//------------- DEFINE RELAY PINS -------------//
+#define BUZZER D5
+#define WATER_PUMP D6
+#define EXHAUST_FAN_1 D7
+#define EXHAUST_FAN_2 D8
+
+//-------------- DEFINE LOOP LED --------------//
+#define LOOP_LED D4
 
 //---------- DEFINE THINGSPEAK FIELDS ---------//
 #define THINGSPEAK_GAS_FIELD 1
@@ -48,6 +51,12 @@
 #define BLYNK_SWITCH_PIN_3 V7
 #define BLYNK_SWITCH_PIN_4 V8
 
+//--------- DEFINE RELAY HIGH AND LOW ---------//
+// Relay works in reverse logic
+// (RELAY HIGH = LOW, RELAY LOW = HIGH)
+#define RELAY_HIGH LOW
+#define RELAY_LOW HIGH
+
 //-- VARIABLES TO STORE DIFFERENT PARAMETERS --//
 int gasValue;
 float temperatureValue;
@@ -56,16 +65,16 @@ int IRValue;
 int flameValue;
 
 //---- THRESHOLD FOR DIFFERENT PARAMETERS -----//
-const int gasThreshold = 200;
-const float temperatureThreshold = 50.00;
-const float humidityThreshold = 50.00;
+const int gasThreshold = 300;
+const float temperatureThreshold = 25.00;
+const float humidityThreshold = 40.00;
 
 //------------- DEFINE DHT SENSOR -------------//
 DHT dht(DHT_PIN, DHT11);
 
 //---------- DEFINE WIFI CREDENTIALS ----------//
-const char *wifiSSID = "POCO M2 Pro";     // Your network SSID here
-const char *wifiPassword = "unlockby8800"; // Your network's password here
+const char *wifiSSID = "";      // Your network SSID here
+const char *wifiPassword = ""; // Your network's password here
 
 //----------- CREATING WIFI CLIENT ------------//
 WiFiClient client;
@@ -101,12 +110,16 @@ BLYNK_WRITE(BLYNK_SWITCH_PIN_4)
 }
 
 //-------- DEFINE LED BLINKING FUNCTION -------//
-void blinkLed(int ledPin)
+void blinkLoopLed()
 {
-  digitalWrite(ledPin, HIGH);
-  delay(100);
-  digitalWrite(ledPin, LOW);
-  delay(100);
+  for (int i = 0; i < 2; i++)
+  {
+    digitalWrite(LOOP_LED, HIGH);
+    delay(100);
+    digitalWrite(LOOP_LED, LOW);
+    delay(100);
+  }
+  digitalWrite(LOOP_LED, LOW);
 }
 
 //------------- SETUP FUNCTION ---------------//
@@ -123,10 +136,24 @@ void setup()
   pinMode(FLAME_PIN, INPUT);
   pinMode(IR_PIN, INPUT);
 
-  pinMode(LED1, OUTPUT);
-  pinMode(LED2, OUTPUT);
-  pinMode(LED3, OUTPUT);
-  pinMode(LED4, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+  pinMode(WATER_PUMP, OUTPUT);
+  pinMode(EXHAUST_FAN_1, OUTPUT);
+  pinMode(EXHAUST_FAN_2, OUTPUT);
+
+  digitalWrite(LOOP_LED, LOW);
+
+  digitalWrite(BUZZER, RELAY_LOW);
+  digitalWrite(WATER_PUMP, RELAY_LOW);
+  digitalWrite(EXHAUST_FAN_1, RELAY_LOW);
+  digitalWrite(EXHAUST_FAN_2, RELAY_LOW);
+
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+
+  blinkLoopLed();
 }
 
 //-------------- LOOP FUNCTION ----------------//
@@ -162,11 +189,11 @@ void loop()
   Serial.println(gasValue);
   Serial.println();
 
-  // Control the LED using the Blynk app
-  digitalWrite(LED1, !bSwitch1Status);
-  digitalWrite(LED2, !bSwitch2Status);
-  digitalWrite(LED3, !bSwitch3Status);
-  digitalWrite(LED4, !bSwitch4Status);
+  // Control the relay using the Blynk app
+  digitalWrite(BUZZER, !bSwitch1Status);
+  digitalWrite(WATER_PUMP, !bSwitch2Status);
+  digitalWrite(EXHAUST_FAN_1, !bSwitch3Status);
+  digitalWrite(EXHAUST_FAN_2, !bSwitch4Status);
 
   // Send the sensor values to ThingSpeak
   ThingSpeak.setField(THINGSPEAK_GAS_FIELD, gasValue);
@@ -183,4 +210,7 @@ void loop()
   Blynk.virtualWrite(BLYNK_HUMIDITY_PIN, humidityValue);
   Blynk.virtualWrite(BLYNK_IR_PIN, IRValue);
   Blynk.virtualWrite(BLYNK_FLAME_PIN, flameValue);
+
+  // Blink the led once the loop executed successfully
+  blinkLoopLed();
 }
