@@ -18,9 +18,9 @@
 
 //------------- DEFINE SENSOR PINS ------------//
 #define GAS_PIN A0
-#define FLAME_PIN D0
-#define IR_PIN D1
 #define DHT_PIN D2
+#define FLAME_PIN D1
+#define IR_PIN D0
 
 //-------------- DEFINE LED PINS --------------//
 #define LED1 D5
@@ -64,8 +64,8 @@ const float humidityThreshold = 50.00;
 DHT dht(DHT_PIN, DHT11);
 
 //---------- DEFINE WIFI CREDENTIALS ----------//
-const char *wifiSSID = "";     // Your network SSID here
-const char *wifiPassword = ""; // Your network's password here
+const char *wifiSSID = "POCO M2 Pro";     // Your network SSID here
+const char *wifiPassword = "unlockby8800"; // Your network's password here
 
 //----------- CREATING WIFI CLIENT ------------//
 WiFiClient client;
@@ -162,24 +162,11 @@ void loop()
   Serial.println(gasValue);
   Serial.println();
 
-  // Blink the LED if the threshold is crossed
-  // if (gasValue > gasThreshold)
-  //   blinkLed(LED1);
-  //
-  // if (temperatureValue > temperatureThreshold)
-  //   blinkLed(LED2);
-  //
-  // if (!IRValue)
-  //   blinkLed(LED3);
-  //
-  // if (flameValue == LOW)
-  //   blinkLed(LED4);
-
   // Control the LED using the Blynk app
-  digitalWrite(LED1, bSwitch1Status);
-  digitalWrite(LED2, bSwitch2Status);
-  digitalWrite(LED3, bSwitch3Status);
-  digitalWrite(LED4, bSwitch4Status);
+  digitalWrite(LED1, !bSwitch1Status);
+  digitalWrite(LED2, !bSwitch2Status);
+  digitalWrite(LED3, !bSwitch3Status);
+  digitalWrite(LED4, !bSwitch4Status);
 
   // Send the sensor values to ThingSpeak
   ThingSpeak.setField(THINGSPEAK_GAS_FIELD, gasValue);
