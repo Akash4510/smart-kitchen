@@ -73,8 +73,8 @@ const float humidityThreshold = 40.00;
 DHT dht(DHT_PIN, DHT11);
 
 //---------- DEFINE WIFI CREDENTIALS ----------//
-const char *wifiSSID = "";      // Your network SSID here
-const char *wifiPassword = ""; // Your network's password here
+const char *wifiSSID = "POCO M2 Pro";      // Your network SSID here
+const char *wifiPassword = "unlockby8800"; // Your network's password here
 
 //----------- CREATING WIFI CLIENT ------------//
 WiFiClient client;
@@ -109,7 +109,7 @@ BLYNK_WRITE(BLYNK_SWITCH_PIN_4)
   bSwitch4Status = param.asInt();
 }
 
-//-------- DEFINE LED BLINKING FUNCTION -------//
+//-------------- DEFINE FUNCIONS --------------//
 void blinkLoopLed()
 {
   for (int i = 0; i < 2; i++)
@@ -121,6 +121,20 @@ void blinkLoopLed()
   }
   digitalWrite(LOOP_LED, LOW);
 }
+
+void playBuzzer()
+{
+  for (int i = 0; i < 3; i++)
+  {
+    digitalWrite(BUZZER, RELAY_HIGH);
+    delay(100);
+    digitalWrite(BUZZER, RELAY_LOW);
+    delay(100);
+  }
+  digitalWrite(BUZZER, RELAY_LOW);
+}
+
+//-------- DEFINE LED BLINKING FUNCTION -------//
 
 //------------- SETUP FUNCTION ---------------//
 void setup()
@@ -154,6 +168,7 @@ void setup()
   Serial.println();
 
   blinkLoopLed();
+  playBuzzer();
 }
 
 //-------------- LOOP FUNCTION ----------------//
@@ -171,22 +186,26 @@ void loop()
   gasValue = analogRead(GAS_PIN);
 
   // Display the readings in the serial monitor
+  Serial.print("Gas Value: ");
+  Serial.println(gasValue);
+
   Serial.print("Temperature: ");
   Serial.print(temperatureValue);
   Serial.println("ºC");
   Serial.print("Humidity: ");
-  Serial.println(humidityValue);
+  Serial.print(humidityValue);
+  Serial.println("%");
 
   if (flameValue == LOW)
     Serial.println("Flame detected");
   else
     Serial.println("No flame detected");
 
-  Serial.print("IR Value: ");
-  Serial.println(IRValue);
+  if (IRValue == LOW)
+    Serial.println("Someone is there :(");
+  else
+    Serial.println("I'm Alone :)");
 
-  Serial.print("Gas Value: ");
-  Serial.println(gasValue);
   Serial.println();
 
   // Control the relay using the Blynk app
