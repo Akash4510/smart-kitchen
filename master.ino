@@ -28,8 +28,9 @@
 #define EXHAUST_FAN_1 D7
 #define EXHAUST_FAN_2 D8
 
-//-------------- DEFINE LOOP LED --------------//
-#define LOOP_LED D4
+//-------------- DEFINE LED PINS --------------//
+#define LOOP_LED D3
+#define IR_LED D4
 
 //---------- DEFINE THINGSPEAK FIELDS ---------//
 #define THINGSPEAK_GAS_FIELD 1
@@ -134,8 +135,6 @@ void playBuzzer()
   digitalWrite(BUZZER, RELAY_LOW);
 }
 
-//-------- DEFINE LED BLINKING FUNCTION -------//
-
 //------------- SETUP FUNCTION ---------------//
 void setup()
 {
@@ -150,12 +149,16 @@ void setup()
   pinMode(FLAME_PIN, INPUT);
   pinMode(IR_PIN, INPUT);
 
+  pinMode(LOOP_LED, OUTPUT);
+  pinMode(IR_LED, OUTPUT);
+
   pinMode(BUZZER, OUTPUT);
   pinMode(WATER_PUMP, OUTPUT);
   pinMode(EXHAUST_FAN_1, OUTPUT);
   pinMode(EXHAUST_FAN_2, OUTPUT);
 
   digitalWrite(LOOP_LED, LOW);
+  digitalWrite(IR_LED, LOW);
 
   digitalWrite(BUZZER, RELAY_LOW);
   digitalWrite(WATER_PUMP, RELAY_LOW);
@@ -201,12 +204,39 @@ void loop()
   else
     Serial.println("No flame detected");
 
-  if (IRValue == LOW)
+  if (IRValue == LOW) {
     Serial.println("Someone is there :(");
-  else
+    digitalWrite(IR_LED, HIGH);
+  }
+  else {
     Serial.println("I'm Alone :)");
+    digitalWrite(IR_LED, LOW);
+  }
 
   Serial.println();
+
+  // Threshold logic
+  // if (IRValue == 0) {
+  //   digitalWrite(EXHAUST_FAN_1, RELAY_HIGH);
+  // } else {
+  //   digitalWrite(EXHAUST_FAN_1, RELAY_LOW);
+  // }
+  //
+  // if (temperatureValue > temperatureThreshold || humidityValue > humidityThreshold) {
+  //   playBuzzer();
+  // }
+  //
+  // if (gasValue > gasThreshold) {
+  //   digitalWrite(EXHAUST_FAN_2, RELAY_HIGH);
+  // } else {
+  //   digitalWrite(EXHAUST_FAN_2, RELAY_LOW);
+  // }
+  //
+  // if (flameValue == 0) {
+  //   digitalWrite(WATER_PUMP, RELAY_HIGH);
+  // } else {
+  //   digitalWrite(WATER_PUMP, RELAY_LOW);
+  // }
 
   // Control the relay using the Blynk app
   digitalWrite(BUZZER, !bSwitch1Status);
