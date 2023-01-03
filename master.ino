@@ -25,8 +25,8 @@
 //------------- DEFINE RELAY PINS -------------//
 #define BUZZER D5
 #define WATER_PUMP D6
-#define EXHAUST_FAN_1 D7
-#define EXHAUST_FAN_2 D8
+#define EXHAUST_FAN_2 D7
+#define EXHAUST_FAN_1 D8
 
 //-------------- DEFINE LED PINS --------------//
 #define LOOP_LED D3
@@ -66,9 +66,9 @@ int IRValue;
 int flameValue;
 
 //---- THRESHOLD FOR DIFFERENT PARAMETERS -----//
-const int gasThreshold = 300;
-const float temperatureThreshold = 25.00;
-const float humidityThreshold = 40.00;
+const int gasThreshold = 450;
+const float temperatureThreshold = 22.00;
+const float humidityThreshold = 32.00;
 
 //------------- DEFINE DHT SENSOR -------------//
 DHT dht(DHT_PIN, DHT11);
@@ -133,6 +133,59 @@ void playBuzzer()
     delay(100);
   }
   digitalWrite(BUZZER, RELAY_LOW);
+}
+
+void playFireAlarm() {
+  for (int i = 0; i < 10; i++)
+  {
+    digitalWrite(BUZZER, RELAY_HIGH);
+    delay(200);
+    digitalWrite(BUZZER, RELAY_LOW);
+    delay(200);
+  }
+  digitalWrite(BUZZER, RELAY_LOW);
+}
+
+void temperatureControl() {
+  if ((temperatureValue > temperatureThreshold ||
+  humidityValue > humidityThreshold) && (bSwitch1Status == 1)) {
+    playBuzzer();
+  }
+
+  if (bSwitch1Status == 0) {
+    digitalWrite(BUZZER, RELAY_LOW);
+  }
+}
+
+void flameControl() {
+  if (flameValue == 0 && bSwitch2Status == 1) {
+    playFireAlarm();
+    digitalWrite(WATER_PUMP, RELAY_HIGH);
+  }
+
+  if (bSwitch2Status == 0) {
+    digitalWrite(WATER_PUMP, RELAY_LOW);
+  }
+}
+
+void IRControl() {
+  if (IRValue == 0 && bSwitch3Status == 1) {
+    digitalWrite(IR_LED, HIGH);
+    digitalWrite(EXHAUST_FAN_1, RELAY_HIGH);
+  }
+
+  if (bSwitch3Status == 0) {
+    digitalWrite(IR_LED, LOW);
+    digitalWrite(EXHAUST_FAN_1, RELAY_LOW);
+  }
+}
+
+void gasControl() {
+  if (gasValue > gasThreshold && bSwitch4Status == 1) {
+    digitalWrite(EXHAUST_FAN_2, RELAY_HIGH);
+  } else {
+    digitalWrite(EXHAUST_FAN_2, RELAY_LOW);
+  }
 }
 
 //------------- SETUP FUNCTION ---------------//
@@ -204,45 +257,24 @@ void loop()
   else
     Serial.println("No flame detected");
 
-  if (IRValue == LOW) {
+  if (IRValue == LOW)
     Serial.println("Someone is there :(");
-    digitalWrite(IR_LED, HIGH);
-  }
-  else {
+  else
     Serial.println("I'm Alone :)");
-    digitalWrite(IR_LED, LOW);
-  }
 
   Serial.println();
 
   // Threshold logic
-  // if (IRValue == 0) {
-  //   digitalWrite(EXHAUST_FAN_1, RELAY_HIGH);
-  // } else {
-  //   digitalWrite(EXHAUST_FAN_1, RELAY_LOW);
-  // }
-  //
-  // if (temperatureValue > temperatureThreshold || humidityValue > humidityThreshold) {
-  //   playBuzzer();
-  // }
-  //
-  // if (gasValue > gasThreshold) {
-  //   digitalWrite(EXHAUST_FAN_2, RELAY_HIGH);
-  // } else {
-  //   digitalWrite(EXHAUST_FAN_2, RELAY_LOW);
-  // }
-  //
-  // if (flameValue == 0) {
-  //   digitalWrite(WATER_PUMP, RELAY_HIGH);
-  // } else {
-  //   digitalWrite(WATER_PUMP, RELAY_LOW);
-  // }
+  gasControl();
+  temperatureControl();
+  IRControl();
+  flameControl();
 
   // Control the relay using the Blynk app
-  digitalWrite(BUZZER, !bSwitch1Status);
-  digitalWrite(WATER_PUMP, !bSwitch2Status);
-  digitalWrite(EXHAUST_FAN_1, !bSwitch3Status);
-  digitalWrite(EXHAUST_FAN_2, !bSwitch4Status);
+  // digitalWrite(BUZZER, !bSwitch1Status);
+  // digitalWrite(WATER_PUMP, !bSwitch2Status);
+  // digitalWrite(EXHAUST_FAN_1, !bSwitch3Status);
+  // digitalWrite(EXHAUST_FAN_2, !bSwitch4Status);
 
   // Send the sensor values to ThingSpeak
   ThingSpeak.setField(THINGSPEAK_GAS_FIELD, gasValue);
